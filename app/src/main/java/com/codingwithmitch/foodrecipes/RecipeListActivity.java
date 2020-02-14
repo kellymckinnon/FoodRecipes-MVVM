@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.SearchView.OnQueryTextListener;
@@ -12,6 +13,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 import com.codingwithmitch.foodrecipes.adapters.RecipeRecyclerAdapter;
 import com.codingwithmitch.foodrecipes.models.Recipe;
 import com.codingwithmitch.foodrecipes.util.VerticalSpacingItemDecorator;
@@ -50,6 +52,14 @@ public class RecipeListActivity extends BaseActivity
     mRecyclerView.setAdapter(mRecipeRecyclerAdapter);
     mRecyclerView.addItemDecoration(new VerticalSpacingItemDecorator(30));
     mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+    mRecyclerView.addOnScrollListener(new OnScrollListener() {
+      @Override
+      public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+        if (!mRecyclerView.canScrollVertically(1)) {
+          mRecipeListViewModel.searchNextPage();
+        }
+      }
+    });
   }
 
   private void initSearchView() {

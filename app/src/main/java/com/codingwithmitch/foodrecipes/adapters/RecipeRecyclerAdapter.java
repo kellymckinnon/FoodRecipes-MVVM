@@ -116,10 +116,12 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
 
   @Override
   public int getItemViewType(int position) {
-    if (getCurrentList().get(position).getTitle().equals("LOADING...")) {
+    if (getItem(position).getTitle().equals("LOADING...")) {
       return LOADING_TYPE;
-    } else if (getCurrentList().get(position).getSocialRank() == -1) {
+    } else if (getItem(position).getSocialRank() == -1) {
       return CATEGORY_TYPE;
+    } else if (position == getItemCount() - 1 && position != 0 && !(getItem(position).getTitle()).equals("EXHAUSTED...")) {
+      return LOADING_TYPE;
     } else {
       return RECIPE_TYPE;
     }

@@ -8,6 +8,8 @@ import java.util.List;
 public class RecipeRepository {
   private static RecipeRepository instance;
   private final RecipeApiClient mRecipeApiClient;
+  private String mQuery;
+  private int mPageNumber;
 
   private RecipeRepository() {
     mRecipeApiClient = RecipeApiClient.getInstance();
@@ -29,6 +31,12 @@ public class RecipeRepository {
     if (pageNumber == 0) {
       pageNumber = 1;
     }
+    mQuery = query;
+    mPageNumber = pageNumber;
     mRecipeApiClient.searchRecipesApi(query, pageNumber);
+  }
+
+  public void searchNextPage() {
+    searchRecipesApi(mQuery, mPageNumber + 1);
   }
 }
