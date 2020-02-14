@@ -2,9 +2,12 @@ package com.codingwithmitch.foodrecipes;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.SearchView.OnQueryTextListener;
+import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -36,6 +39,8 @@ public class RecipeListActivity extends BaseActivity
     if (!mRecipeListViewModel.isViewingRecipes()) {
       displaySearchCategories();
     }
+
+    setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
   }
 
   private void initRecyclerView() {
@@ -106,5 +111,19 @@ public class RecipeListActivity extends BaseActivity
     } else {
       displaySearchCategories();
     }
+  }
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.recipe_search_menu, menu);
+    return super.onCreateOptionsMenu(menu);
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    if (item.getItemId() == R.id.action_categories) {
+      displaySearchCategories();
+    }
+    return super.onOptionsItemSelected(item);
   }
 }
