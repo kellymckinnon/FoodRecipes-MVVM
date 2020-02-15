@@ -4,6 +4,7 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.codingwithmitch.foodrecipes.models.Recipe;
+import com.codingwithmitch.foodrecipes.requests.responses.RecipeResponse;
 import com.codingwithmitch.foodrecipes.requests.responses.RecipeSearchResponse;
 import com.codingwithmitch.foodrecipes.util.Constants;
 import java.io.IOException;
@@ -20,10 +21,7 @@ public class RecipeApiClient {
   private static RecipeApiClient instance;
 
   private final MutableLiveData<List<Recipe>> mRecipes;
-
-  private RecipeApiClient() {
-    mRecipes = new MutableLiveData<>();
-  }
+  private final MutableLiveData<Recipe> mRecipe;
 
   public static RecipeApiClient getInstance() {
     if (instance == null) {
@@ -33,8 +31,17 @@ public class RecipeApiClient {
     return instance;
   }
 
+  private RecipeApiClient() {
+    mRecipes = new MutableLiveData<>();
+    mRecipe = new MutableLiveData<>();
+  }
+
   public LiveData<List<Recipe>> getRecipes() {
     return mRecipes;
+  }
+
+  public LiveData<Recipe> getRecipe() {
+    return mRecipe;
   }
 
   public void searchRecipesApi(String query, final int pageNumber) {
@@ -68,6 +75,36 @@ public class RecipeApiClient {
 
               @Override
               public void onFailure(Call<RecipeSearchResponse> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+              }
+            });
+  }
+
+  public void searchRecipeById(String recipeId) {
+    ServiceGenerator.getRecipeApi()
+        .getRecipe(Constants.API_KEY, recipeId)
+        .enqueue(
+            new Callback<RecipeResponse>() {
+              @Override
+              public void onResponse(
+                  Call<RecipeResponse> call, Response<RecipeResponse> response) {
+                if (response.code() == 200) {
+                  Recipe recipe = response.body().getRecipe();
+                  mRecipe.postValue(recipe);
+                } else {
+                  String error = null;
+                  try {
+                    error = response.errorBody().string();
+                  } catch (IOException e) {
+                    e.printStackTrace();
+                  }
+                  Log.d(TAG, "onResponse: " + error);
+                  mRecipe.postValue(null);
+                }
+              }
+
+              @Override
+              public void onFailure(Call<RecipeResponse> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
               }
             });
