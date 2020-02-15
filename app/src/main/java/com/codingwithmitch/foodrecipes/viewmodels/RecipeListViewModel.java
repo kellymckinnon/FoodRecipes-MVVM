@@ -26,7 +26,7 @@ public class RecipeListViewModel extends ViewModel {
   }
 
   public void searchNextPage() {
-    if (mIsViewingRecipes) {
+    if (mIsViewingRecipes && !mRecipeRepository.isQueryExhausted().getValue()) {
       mRecipeRepository.searchNextPage();
     }
   }

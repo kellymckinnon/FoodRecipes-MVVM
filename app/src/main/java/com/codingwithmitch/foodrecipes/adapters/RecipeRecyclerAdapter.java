@@ -120,8 +120,6 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
       return LOADING_TYPE;
     } else if (getItem(position).getSocialRank() == -1) {
       return CATEGORY_TYPE;
-    } else if (position == getItemCount() - 1 && position != 0 && !(getItem(position).getTitle()).equals("EXHAUSTED...")) {
-      return LOADING_TYPE;
     } else {
       return RECIPE_TYPE;
     }
