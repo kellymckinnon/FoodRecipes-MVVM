@@ -1,5 +1,6 @@
 package com.codingwithmitch.foodrecipes;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 import com.codingwithmitch.foodrecipes.adapters.RecipeRecyclerAdapter;
 import com.codingwithmitch.foodrecipes.models.Recipe;
+import com.codingwithmitch.foodrecipes.util.Constants;
 import com.codingwithmitch.foodrecipes.util.VerticalSpacingItemDecorator;
 import com.codingwithmitch.foodrecipes.viewmodels.RecipeListViewModel;
 import java.util.List;
@@ -106,7 +108,15 @@ public class RecipeListActivity extends BaseActivity
   }
 
   @Override
-  public void onRecipeClick(int position) {}
+  public void onRecipeClick(int position) {
+    List<Recipe> recipes = mRecipeRecyclerAdapter.getCurrentList();
+    if (recipes != null && recipes.size() > position) {
+      Recipe recipe = recipes.get(position);
+      Intent intent = new Intent(this, RecipeActivity.class);
+      intent.putExtra(Constants.EXTRA_RECIPE, recipe);
+      startActivity(intent);
+    }
+  }
 
   @Override
   public void onCategoryClick(String category) {
