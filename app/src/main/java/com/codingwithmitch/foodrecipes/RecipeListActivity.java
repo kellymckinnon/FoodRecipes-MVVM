@@ -20,6 +20,7 @@ import com.codingwithmitch.foodrecipes.models.Recipe;
 import com.codingwithmitch.foodrecipes.util.Constants;
 import com.codingwithmitch.foodrecipes.util.VerticalSpacingItemDecorator;
 import com.codingwithmitch.foodrecipes.viewmodels.RecipeListViewModel;
+import com.codingwithmitch.foodrecipes.viewmodels.RecipeListViewModel.ViewState;
 import java.util.List;
 
 public class RecipeListActivity extends BaseActivity
@@ -39,11 +40,6 @@ public class RecipeListActivity extends BaseActivity
     subscribeObservers();
     initRecyclerView();
     initSearchView();
-
-    if (!mRecipeListViewModel.isViewingRecipes()) {
-      displaySearchCategories();
-    }
-
     setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
   }
 
@@ -83,6 +79,19 @@ public class RecipeListActivity extends BaseActivity
   }
 
   private void subscribeObservers() {
+    mRecipeListViewModel.getViewState().observe(this, new Observer<ViewState>() {
+      @Override
+      public void onChanged(ViewState viewState) {
+        if (viewState != null) {
+          switch (viewState) {
+            case RECIPES: break; // Recipes will show from another observer
+            case CATEGORIES:
+              displaySearchCategories();
+              break;
+          }
+        }
+      }
+    });
     mRecipeListViewModel
         .getRecipes()
         .observe(
@@ -91,19 +100,18 @@ public class RecipeListActivity extends BaseActivity
               @Override
               public void onChanged(@Nullable List<Recipe> recipes) {
                 if (recipes != null) {
-                  for (Recipe recipe : recipes) {
-                    if (mRecipeListViewModel.isViewingRecipes()) {
-                      Log.d(TAG, "onChanged: " + recipe.getTitle());
-                      mRecipeRecyclerAdapter.submitList(recipes);
-                    }
-                  }
+//                  for (Recipe recipe : recipes) {
+//                    if (mRecipeListViewModel.isViewingRecipes()) {
+//                      Log.d(TAG, "onChanged: " + recipe.getTitle());
+//                      mRecipeRecyclerAdapter.submitList(recipes);
+//                    }
+//                  }
                 }
               }
             });
   }
 
   private void displaySearchCategories() {
-    mRecipeListViewModel.setIsViewingRecipes(false);
     mRecipeRecyclerAdapter.displaySearchCategories();
   }
 
@@ -122,15 +130,6 @@ public class RecipeListActivity extends BaseActivity
   public void onCategoryClick(String category) {
     mRecipeRecyclerAdapter.displayLoading();
     mRecipeListViewModel.searchRecipesApi(category, 1);
-  }
-
-  @Override
-  public void onBackPressed() {
-    if (mRecipeListViewModel.onBackPressed()) {
-      super.onBackPressed();
-    } else {
-      displaySearchCategories();
-    }
   }
 
   @Override

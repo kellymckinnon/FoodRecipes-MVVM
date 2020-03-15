@@ -1,6 +1,7 @@
 package com.codingwithmitch.foodrecipes.viewmodels;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import com.codingwithmitch.foodrecipes.models.Recipe;
 import com.codingwithmitch.foodrecipes.repositories.RecipeRepository;
@@ -10,10 +11,24 @@ import java.util.List;
 public class RecipeListViewModel extends ViewModel {
 
   private final RecipeRepository mRecipeRepository;
-  private boolean mIsViewingRecipes;
+  private MutableLiveData<ViewState> mViewState;
+
+  public enum ViewState {
+    CATEGORIES,
+    RECIPES
+  }
 
   public RecipeListViewModel() {
     mRecipeRepository = RecipeRepository.getInstance();
+
+    if (mViewState == null) {
+      mViewState = new MutableLiveData<>();
+      mViewState.setValue(ViewState.CATEGORIES);
+    }
+  }
+
+  public LiveData<ViewState> getViewState() {
+    return mViewState;
   }
 
   public LiveData<List<Recipe>> getRecipes() {
@@ -21,30 +36,12 @@ public class RecipeListViewModel extends ViewModel {
   }
 
   public void searchRecipesApi(String query, int pageNumber) {
-    mIsViewingRecipes = true;
     mRecipeRepository.searchRecipesApi(query, pageNumber);
   }
 
   public void searchNextPage() {
-    if (mIsViewingRecipes && !mRecipeRepository.isQueryExhausted().getValue()) {
+    if (!mRecipeRepository.isQueryExhausted().getValue()) {
       mRecipeRepository.searchNextPage();
     }
-  }
-
-  public boolean isViewingRecipes() {
-    return mIsViewingRecipes;
-  }
-
-  public void setIsViewingRecipes(boolean isViewingRecipes) {
-    mIsViewingRecipes = isViewingRecipes;
-  }
-
-  public boolean onBackPressed() {
-    if (mIsViewingRecipes) {
-      mIsViewingRecipes = false;
-      return false;
-    }
-
-    return true;
   }
 }
