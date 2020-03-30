@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.request.Request;
 import com.bumptech.glide.request.RequestOptions;
 import com.codingwithmitch.foodrecipes.R;
 import com.codingwithmitch.foodrecipes.models.Recipe;
@@ -48,6 +50,7 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
         }
       };
   private OnRecipeListener mOnRecipeListener;
+  private RequestManager requestManager;
 
   public RecipeRecyclerAdapter() {
     super(DIFF_CALLBACK);
@@ -55,6 +58,10 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
 
   public void setOnRecipeListener(OnRecipeListener onRecipeListener) {
     mOnRecipeListener = onRecipeListener;
+  }
+
+  public void setGlideRequestManager(RequestManager glideRequestManager) {
+    requestManager = glideRequestManager;
   }
 
   @NonNull
@@ -66,7 +73,7 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
         view =
             LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.layout_recipe_list_item, viewGroup, false);
-        return new RecipeViewHolder(view, mOnRecipeListener);
+        return new RecipeViewHolder(view, mOnRecipeListener, requestManager);
       case LOADING_TYPE:
         view =
             LayoutInflater.from(viewGroup.getContext())
@@ -76,7 +83,7 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
         view =
             LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.layout_category_list_item, viewGroup, false);
-        return new CategoryViewHolder(view, mOnRecipeListener);
+        return new CategoryViewHolder(view, mOnRecipeListener, requestManager);
       default:
         throw new IllegalArgumentException("Not a valid viewtype");
     }
@@ -88,29 +95,9 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
     Recipe item = getItem(i);
 
     if (itemViewType == RECIPE_TYPE) {
-      ((RecipeViewHolder) viewHolder).title.setText(item.getTitle());
-      ((RecipeViewHolder) viewHolder).publisher.setText(item.getPublisher());
-      ((RecipeViewHolder) viewHolder)
-          .socialScore.setText(String.valueOf(Math.round(item.getSocial_rank())));
-
-      RequestOptions requestOptions =
-          new RequestOptions().placeholder(R.drawable.ic_launcher_background);
-      Glide.with(viewHolder.itemView.getContext())
-          .setDefaultRequestOptions(requestOptions)
-          .load(item.getImage_url())
-          .into(((RecipeViewHolder) viewHolder).image);
+      ((RecipeViewHolder) viewHolder).onBind(item);
     } else if (itemViewType == CATEGORY_TYPE) {
-      RequestOptions requestOptions =
-          new RequestOptions().placeholder(R.drawable.ic_launcher_background);
-      Uri path =
-          Uri.parse(
-              "android.resource://com.codingwithmitch.foodrecipes/drawable/" + item.getImage_url());
-
-      Glide.with(viewHolder.itemView.getContext())
-          .setDefaultRequestOptions(requestOptions)
-          .load(path)
-          .into(((CategoryViewHolder) viewHolder).image);
-      ((CategoryViewHolder) viewHolder).categoryTitle.setText(item.getTitle());
+      ((CategoryViewHolder) viewHolder).onBind(item);
     }
   }
 
@@ -125,15 +112,32 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
     }
   }
 
-  public void displayLoading() {
-    // Remove all items from the list and insert dummy item
+  public void displayLoading(boolean onlyShowLoading) {
+    List<Recipe> loadingList = onlyShowLoading ? new ArrayList<Recipe>() : getCurrentList();
+
     if (!isLoading()) {
       Recipe recipe = new Recipe();
       recipe.setTitle("LOADING...");
-      List<Recipe> loadingList = new ArrayList<>();
       loadingList.add(recipe);
       submitList(loadingList);
     }
+  }
+
+  public void hideLoading() {
+    if (isLoading()) {
+      // The loading will either be at the beginning or end
+      List<Recipe> currentList = new ArrayList(getCurrentList());
+      if (currentList.get(0).getTitle().equals("LOADING...")) {
+        currentList.remove(0);
+      } else if (currentList.get(currentList.size() - 1).getTitle().equals("LOADING...")) {
+        currentList.remove(currentList.size() - 1);
+      }
+      submitList(currentList);
+    }
+  }
+
+  public void showQueryExhausted() {
+    // TODO
   }
 
   public void displaySearchCategories() {
@@ -166,15 +170,25 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
     final TextView socialScore;
     final AppCompatImageView image;
     final OnRecipeListener onRecipeListener;
+    final RequestManager requestManager;
 
-    RecipeViewHolder(@NonNull View itemView, OnRecipeListener onRecipeListener) {
+    RecipeViewHolder(@NonNull View itemView, OnRecipeListener onRecipeListener, RequestManager requestManager) {
       super(itemView);
       this.onRecipeListener = onRecipeListener;
+      this.requestManager = requestManager;
       title = itemView.findViewById(R.id.recipe_title);
       publisher = itemView.findViewById(R.id.recipe_publisher);
       socialScore = itemView.findViewById(R.id.recipe_social_score);
       image = itemView.findViewById(R.id.recipe_image);
       itemView.setOnClickListener(this);
+    }
+
+    public void onBind(Recipe recipe) {
+      requestManager.load(recipe.getImage_url()).into(image);
+
+      title.setText(recipe.getTitle());
+      publisher.setText(recipe.getPublisher());
+      socialScore.setText(String.valueOf(Math.round(recipe.getSocial_rank())));
     }
 
     @Override
@@ -195,13 +209,21 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
     final OnRecipeListener listener;
     final CircleImageView image;
     final TextView categoryTitle;
+    final RequestManager requestManager;
 
-    CategoryViewHolder(@NonNull View itemView, OnRecipeListener listener) {
+    CategoryViewHolder(@NonNull View itemView, OnRecipeListener listener, RequestManager requestManager) {
       super(itemView);
       this.listener = listener;
+      this.requestManager = requestManager;
       image = itemView.findViewById(R.id.category_image);
       categoryTitle = itemView.findViewById(R.id.category_title);
       itemView.setOnClickListener(this);
+    }
+
+    public void onBind(Recipe recipe) {
+      requestManager.load("android.resource://com.codingwithmitch.foodrecipes/drawable/" + recipe.getImage_url()).into(image);
+
+      categoryTitle.setText(recipe.getTitle());
     }
 
     @Override
