@@ -51,21 +51,21 @@ public class RecipeActivity extends BaseActivity {
     if (getIntent().hasExtra(Constants.EXTRA_RECIPE)) {
       Recipe recipe = getIntent().getParcelableExtra(Constants.EXTRA_RECIPE);
       Log.d(TAG, "getIncomingIntent: " + recipe.getTitle());
-      mRecipeViewModel.searchRecipeById(recipe.getRecipeId());
+//      mRecipeViewModel.searchRecipeById(recipe.getRecipe_id());
     }
   }
 
   private void subscribeObservers() {
-    mRecipeViewModel.getRecipe().observe(this, new Observer<Recipe>() {
-      @Override
-      public void onChanged(Recipe recipe) {
-        if (recipe != null) {
-          if (recipe.getRecipeId().equals(mRecipeViewModel.getRecipeId())) {
-            setRecipeProperties(recipe);
-          }
-        }
-      }
-    });
+//    mRecipeViewModel.getRecipe().observe(this, new Observer<Recipe>() {
+//      @Override
+//      public void onChanged(Recipe recipe) {
+//        if (recipe != null) {
+//          if (recipe.getRecipe_id().equals(mRecipeViewModel.getRecipeId())) {
+//            setRecipeProperties(recipe);
+//          }
+//        }
+//      }
+//    });
   }
 
   private void setRecipeProperties(Recipe recipe) {
@@ -75,11 +75,11 @@ public class RecipeActivity extends BaseActivity {
 
       Glide.with(this)
           .setDefaultRequestOptions(requestOptions)
-          .load(recipe.getImageUrl())
+          .load(recipe.getImage_url())
           .into(mRecipeImage);
 
       mRecipeTitle.setText(recipe.getTitle());
-      mRecipeRank.setText(String.valueOf(Math.round(recipe.getSocialRank())));
+      mRecipeRank.setText(String.valueOf(Math.round(recipe.getSocial_rank())));
 
       mRecipeIngredientsContainer.removeAllViews();
       for (String ingredient : recipe.getIngredients()) {

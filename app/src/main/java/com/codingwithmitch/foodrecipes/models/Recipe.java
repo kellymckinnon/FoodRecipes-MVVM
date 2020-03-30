@@ -5,24 +5,16 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 import java.util.Arrays;
-import java.util.Objects;
 
 @Entity(tableName = "recipes")
 public class Recipe implements Parcelable {
-  public static final Parcelable.Creator<Recipe> CREATOR =
-      new Parcelable.Creator<Recipe>() {
-        @Override
-        public Recipe createFromParcel(Parcel source) {
-          return new Recipe(source);
-        }
 
-        @Override
-        public Recipe[] newArray(int size) {
-          return new Recipe[size];
-        }
-      };
+  @PrimaryKey
+  @NonNull
+  private String recipe_id;
 
   @ColumnInfo(name = "title")
   private String title;
@@ -30,27 +22,24 @@ public class Recipe implements Parcelable {
   @ColumnInfo(name = "publisher")
   private String publisher;
 
-  @ColumnInfo(name = "ingredients")
-  private String[] ingredients;
-
-  @PrimaryKey
-  @NonNull
-  private String recipe_id;
-
   @ColumnInfo(name = "image_url")
   private String image_url;
 
   @ColumnInfo(name = "social_rank")
   private float social_rank;
 
+  @ColumnInfo(name = "ingredients")
+  private String[] ingredients;
+
+  /** Saves current timestamp in **SECONDS** */
   @ColumnInfo(name = "timestamp")
   private int timestamp;
 
   public Recipe(
+      @NonNull String recipe_id,
       String title,
       String publisher,
       String[] ingredients,
-      String recipe_id,
       String image_url,
       float social_rank,
       int timestamp) {
@@ -63,16 +52,65 @@ public class Recipe implements Parcelable {
     this.timestamp = timestamp;
   }
 
+  @Ignore
   public Recipe() {}
 
-  private Recipe(Parcel in) {
-    this.title = in.readString();
-    this.publisher = in.readString();
-    this.ingredients = in.createStringArray();
-    this.recipe_id = in.readString();
-    this.image_url = in.readString();
-    this.social_rank = in.readFloat();
-    this.timestamp = in.readInt();
+  @Ignore
+  public Recipe(Recipe recipe) {
+    this.title = recipe.title;
+    this.publisher = recipe.publisher;
+    this.ingredients = recipe.ingredients;
+    this.recipe_id = recipe.recipe_id;
+    this.image_url = recipe.image_url;
+    this.social_rank = recipe.social_rank;
+    this.timestamp = recipe.timestamp;
+  }
+
+  protected Recipe(Parcel in) {
+    recipe_id = in.readString();
+    title = in.readString();
+    publisher = in.readString();
+    image_url = in.readString();
+    social_rank = in.readFloat();
+    ingredients = in.createStringArray();
+    timestamp = in.readInt();
+  }
+
+  @Override
+  public void writeToParcel(Parcel dest, int flags) {
+    dest.writeString(recipe_id);
+    dest.writeString(title);
+    dest.writeString(publisher);
+    dest.writeString(image_url);
+    dest.writeFloat(social_rank);
+    dest.writeStringArray(ingredients);
+    dest.writeInt(timestamp);
+  }
+
+  @Override
+  public int describeContents() {
+    return 0;
+  }
+
+  public static final Creator<Recipe> CREATOR =
+      new Creator<Recipe>() {
+        @Override
+        public Recipe createFromParcel(Parcel in) {
+          return new Recipe(in);
+        }
+
+        @Override
+        public Recipe[] newArray(int size) {
+          return new Recipe[size];
+        }
+      };
+
+  public int getTimestamp() {
+    return timestamp;
+  }
+
+  public void setTimestamp(int timestamp) {
+    this.timestamp = timestamp;
   }
 
   public String getTitle() {
@@ -99,97 +137,51 @@ public class Recipe implements Parcelable {
     this.ingredients = ingredients;
   }
 
-  public String getRecipeId() {
-    return recipe_id;
-  }
-
-  public void setRecipeId(String recipe_id) {
-    this.recipe_id = recipe_id;
-  }
-
-  public String getImageUrl() {
+  public String getImage_url() {
     return image_url;
   }
 
-  public void setImageUrl(String image_url) {
+  public void setImage_url(String image_url) {
     this.image_url = image_url;
   }
 
-  public float getSocialRank() {
+  public float getSocial_rank() {
     return social_rank;
   }
 
-  public void setSocialRank(float social_rank) {
+  public void setSocial_rank(float social_rank) {
     this.social_rank = social_rank;
   }
 
-  public int getTimestamp() {
-    return timestamp;
+  public String getRecipe_id() {
+    return recipe_id;
   }
 
-  public void setTimestamp(int timestamp) {
-    this.timestamp = timestamp;
+  public void setRecipe_id(String recipe_id) {
+    this.recipe_id = recipe_id;
   }
 
   @Override
   public String toString() {
     return "Recipe{"
-        + "title='"
+        + "recipe_id='"
+        + recipe_id
+        + '\''
+        + ", title='"
         + title
         + '\''
         + ", publisher='"
         + publisher
-        + '\''
-        + ", ingredients="
-        + Arrays.toString(ingredients)
-        + ", recipe_id='"
-        + recipe_id
         + '\''
         + ", image_url='"
         + image_url
         + '\''
         + ", social_rank="
         + social_rank
-        + '\''
+        + ", ingredients="
+        + Arrays.toString(ingredients)
         + ", timestamp="
         + timestamp
         + '}';
-  }
-
-  @Override
-  public int describeContents() {
-    return 0;
-  }
-
-  @Override
-  public void writeToParcel(Parcel dest, int flags) {
-    dest.writeString(this.title);
-    dest.writeString(this.publisher);
-    dest.writeStringArray(this.ingredients);
-    dest.writeString(this.recipe_id);
-    dest.writeString(this.image_url);
-    dest.writeFloat(this.social_rank);
-    dest.writeInt((this.timestamp));
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Recipe recipe = (Recipe) o;
-    return Float.compare(recipe.social_rank, social_rank) == 0
-        && Objects.equals(title, recipe.title)
-        && Objects.equals(publisher, recipe.publisher)
-        && Arrays.equals(ingredients, recipe.ingredients)
-        && Objects.equals(recipe_id, recipe.recipe_id)
-        && Objects.equals(image_url, recipe.image_url)
-        && Objects.equals(timestamp, recipe.timestamp);
-  }
-
-  @Override
-  public int hashCode() {
-    int result = Objects.hash(title, publisher, recipe_id, image_url, social_rank, timestamp);
-    result = 31 * result + Arrays.hashCode(ingredients);
-    return result;
   }
 }

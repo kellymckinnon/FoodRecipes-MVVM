@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 import com.codingwithmitch.foodrecipes.adapters.RecipeRecyclerAdapter;
 import com.codingwithmitch.foodrecipes.models.Recipe;
 import com.codingwithmitch.foodrecipes.util.Constants;
+import com.codingwithmitch.foodrecipes.util.Resource;
 import com.codingwithmitch.foodrecipes.util.VerticalSpacingItemDecorator;
 import com.codingwithmitch.foodrecipes.viewmodels.RecipeListViewModel;
 import com.codingwithmitch.foodrecipes.viewmodels.RecipeListViewModel.ViewState;
@@ -53,9 +54,9 @@ public class RecipeListActivity extends BaseActivity
     mRecyclerView.addOnScrollListener(new OnScrollListener() {
       @Override
       public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-        if (!mRecyclerView.canScrollVertically(1)) {
-          mRecipeListViewModel.searchNextPage();
-        }
+//        if (!mRecyclerView.canScrollVertically(1)) {
+//          mRecipeListViewModel.searchNextPage();
+//        }
       }
     });
   }
@@ -66,7 +67,7 @@ public class RecipeListActivity extends BaseActivity
         new OnQueryTextListener() {
           @Override
           public boolean onQueryTextSubmit(String query) {
-            mRecipeRecyclerAdapter.displayLoading();
+//            mRecipeRecyclerAdapter.displayLoading();
             mRecipeListViewModel.searchRecipesApi(query, 1);
             return false;
           }
@@ -96,16 +97,17 @@ public class RecipeListActivity extends BaseActivity
         .getRecipes()
         .observe(
             this,
-            new Observer<List<Recipe>>() {
+            new Observer<Resource<List<Recipe>>>() {
               @Override
-              public void onChanged(@Nullable List<Recipe> recipes) {
-                if (recipes != null) {
-//                  for (Recipe recipe : recipes) {
-//                    if (mRecipeListViewModel.isViewingRecipes()) {
-//                      Log.d(TAG, "onChanged: " + recipe.getTitle());
-//                      mRecipeRecyclerAdapter.submitList(recipes);
-//                    }
-//                  }
+              public void onChanged(@Nullable Resource<List<Recipe>> listResource) {
+                if (listResource != null) {
+                  Log.d(TAG, "onChanged: status: " + listResource.status);
+
+                  if (listResource.data != null) {
+                    for (Recipe recipe : listResource.data) {
+                      System.out.println(recipe);
+                    }
+                  }
                 }
               }
             });

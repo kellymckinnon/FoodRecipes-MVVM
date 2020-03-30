@@ -1,86 +1,79 @@
 package com.codingwithmitch.foodrecipes.repositories;
 
+import android.content.Context;
+import android.util.Log;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MediatorLiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
+import com.codingwithmitch.foodrecipes.AppExecutors;
 import com.codingwithmitch.foodrecipes.models.Recipe;
-import com.codingwithmitch.foodrecipes.requests.RecipeApiClient;
+import com.codingwithmitch.foodrecipes.persistence.RecipeDao;
+import com.codingwithmitch.foodrecipes.persistence.RecipeDatabase;
+import com.codingwithmitch.foodrecipes.requests.ServiceGenerator;
+import com.codingwithmitch.foodrecipes.requests.responses.ApiResponse;
+import com.codingwithmitch.foodrecipes.requests.responses.RecipeSearchResponse;
+import com.codingwithmitch.foodrecipes.util.Constants;
+import com.codingwithmitch.foodrecipes.util.NetworkBoundResource;
+import com.codingwithmitch.foodrecipes.util.Resource;
 import java.util.List;
 
 public class RecipeRepository {
+  private static final String TAG = "RecipeRepository";
   private static RecipeRepository instance;
-  private final RecipeApiClient mRecipeApiClient;
-  private String mQuery;
-  private int mPageNumber;
-  private MutableLiveData<Boolean> mIsQueryExhausted = new MutableLiveData<>();
-  private MediatorLiveData<List<Recipe>> mRecipes = new MediatorLiveData<>();
+  private RecipeDao recipeDao;
 
-  private RecipeRepository() {
-    mRecipeApiClient = RecipeApiClient.getInstance();
-    initMediators();
+  private RecipeRepository(Context context) {
+    recipeDao = RecipeDatabase.getInstance(context).getRecipeDao();
   }
 
-  public static RecipeRepository getInstance() {
+  public static RecipeRepository getInstance(Context context) {
     if (instance == null) {
-      instance = new RecipeRepository();
+      instance = new RecipeRepository(context);
     }
 
     return instance;
   }
 
-  private void initMediators() {
-    LiveData<List<Recipe>> recipeListApiSource = mRecipeApiClient.getRecipes();
-    mRecipes.addSource(recipeListApiSource, new Observer<List<Recipe>>() {
+  public LiveData<Resource<List<Recipe>>> searchRecipesApi(
+      final String query, final int pageNumber) {
+    return new NetworkBoundResource<List<Recipe>, RecipeSearchResponse>(
+        AppExecutors.getInstance()) {
+
       @Override
-      public void onChanged(List<Recipe> recipes) {
-        if (recipes != null) {
-          mRecipes.setValue(recipes);
-          doneQuery(recipes);
-        } else { // Search database
-          doneQuery(null);
+      protected void saveCallResult(@NonNull RecipeSearchResponse item) {
+        if (item.getRecipes() != null) {
+          Recipe[] recipes = new Recipe[item.getRecipes().size()];
+          int index = 0;
+
+          for (long rowid : recipeDao.insertRecipes(item.getRecipes().toArray(recipes))) {
+            if (rowid == -1) {
+              Log.d(TAG, "saveCallResult: CONFLICT... this recipe is already in the cache");
+              // if the recipe already exists, I don't want to set the ingredients or timestamp
+              // because they will be erased
+              Recipe recipe = recipes[index];
+              recipeDao.updateRecipe(recipe.getRecipe_id(), recipe.getTitle(), recipe.getPublisher(), recipe.getImage_url(), recipe.getSocial_rank());
+            }
+          }
         }
       }
-    });
-  }
 
-  private void doneQuery(List<Recipe> list) {
-    if (list != null) {
-      if (list.size() < 30) { // This is the end!
-        mIsQueryExhausted.setValue(true);
+      @Override
+      protected boolean shouldFetch(@Nullable List<Recipe> data) {
+        return true;
       }
-    } else {
-      mIsQueryExhausted.setValue(true);
-    }
-  }
 
-  public LiveData<List<Recipe>> getRecipes() {
-    return mRecipes;
-  }
+      @NonNull
+      @Override
+      protected LiveData<List<Recipe>> loadFromDb() {
+        return recipeDao.searchRecipes(query, pageNumber);
+      }
 
-  public LiveData<Recipe> getRecipe() {
-    return mRecipeApiClient.getRecipe();
-  }
-
-  public LiveData<Boolean> isQueryExhausted() {
-    return mIsQueryExhausted;
-  }
-
-  public void searchRecipesApi(String query, int pageNumber) {
-    if (pageNumber == 0) {
-      pageNumber = 1;
-    }
-    mQuery = query;
-    mPageNumber = pageNumber;
-    mIsQueryExhausted.setValue(false);
-    mRecipeApiClient.searchRecipesApi(query, pageNumber);
-  }
-
-  public void searchNextPage() {
-    searchRecipesApi(mQuery, mPageNumber + 1);
-  }
-
-  public void searchRecipeById(String recipeId) {
-    mRecipeApiClient.searchRecipeById(recipeId);
+      @NonNull
+      @Override
+      protected LiveData<ApiResponse<RecipeSearchResponse>> createCall() {
+        return ServiceGenerator.getRecipeApi()
+            .searchRecipe(Constants.API_KEY, query, String.valueOf(pageNumber));
+      }
+    }.getAsLiveData();
   }
 }

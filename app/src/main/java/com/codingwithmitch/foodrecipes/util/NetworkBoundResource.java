@@ -45,7 +45,7 @@ public abstract class NetworkBoundResource<CacheObject, RequestObject> {
             mResults.removeSource(dbSource);
 
             if (shouldFetch(cacheObject)) {
-              // get data from the network
+              fetchFromNetwork(dbSource);
             } else {
               mResults.addSource(
                   dbSource,
@@ -173,7 +173,7 @@ public abstract class NetworkBoundResource<CacheObject, RequestObject> {
 
   /** Called to save the result of the API response into the database */
   @WorkerThread
-  protected abstract void saveCallResult(@NonNull CacheObject item);
+  protected abstract void saveCallResult(@NonNull RequestObject item);
 
   /**
    * Called with the data in the database to decide whether to fetch potentially updated data from

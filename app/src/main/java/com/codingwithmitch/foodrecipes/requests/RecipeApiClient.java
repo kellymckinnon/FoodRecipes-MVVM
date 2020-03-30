@@ -45,68 +45,68 @@ public class RecipeApiClient {
   }
 
   public void searchRecipesApi(String query, final int pageNumber) {
-    ServiceGenerator.getRecipeApi()
-        .searchRecipe(Constants.API_KEY, query, String.valueOf(pageNumber))
-        .enqueue(
-            new Callback<RecipeSearchResponse>() {
-              @Override
-              public void onResponse(
-                  Call<RecipeSearchResponse> call, Response<RecipeSearchResponse> response) {
-                if (response.code() == 200) {
-                  List<Recipe> list = new ArrayList<>(response.body().getRecipes());
-                  if (pageNumber == 1) {
-                    mRecipes.postValue(list);
-                  } else {
-                    List<Recipe> currentRecipes = mRecipes.getValue();
-                    currentRecipes.addAll(list);
-                    mRecipes.postValue(currentRecipes);
-                  }
-                } else {
-                  String error = null;
-                  try {
-                    error = response.errorBody().string();
-                  } catch (IOException e) {
-                    e.printStackTrace();
-                  }
-                  Log.d(TAG, "onResponse: " + error);
-                  mRecipes.postValue(null);
-                }
-              }
-
-              @Override
-              public void onFailure(Call<RecipeSearchResponse> call, Throwable t) {
-                Log.e(TAG, "onFailure: ", t);
-              }
-            });
+//    ServiceGenerator.getRecipeApi()
+//        .searchRecipe(Constants.API_KEY, query, String.valueOf(pageNumber))
+//        .enqueue(
+//            new Callback<RecipeSearchResponse>() {
+//              @Override
+//              public void onResponse(
+//                  Call<RecipeSearchResponse> call, Response<RecipeSearchResponse> response) {
+//                if (response.code() == 200) {
+//                  List<Recipe> list = new ArrayList<>(response.body().getRecipes());
+//                  if (pageNumber == 1) {
+//                    mRecipes.postValue(list);
+//                  } else {
+//                    List<Recipe> currentRecipes = mRecipes.getValue();
+//                    currentRecipes.addAll(list);
+//                    mRecipes.postValue(currentRecipes);
+//                  }
+//                } else {
+//                  String error = null;
+//                  try {
+//                    error = response.errorBody().string();
+//                  } catch (IOException e) {
+//                    e.printStackTrace();
+//                  }
+//                  Log.d(TAG, "onResponse: " + error);
+//                  mRecipes.postValue(null);
+//                }
+//              }
+//
+//              @Override
+//              public void onFailure(Call<RecipeSearchResponse> call, Throwable t) {
+//                Log.e(TAG, "onFailure: ", t);
+//              }
+//            });
   }
 
   public void searchRecipeById(String recipeId) {
-    ServiceGenerator.getRecipeApi()
-        .getRecipe(Constants.API_KEY, recipeId)
-        .enqueue(
-            new Callback<RecipeResponse>() {
-              @Override
-              public void onResponse(
-                  Call<RecipeResponse> call, Response<RecipeResponse> response) {
-                if (response.code() == 200) {
-                  Recipe recipe = response.body().getRecipe();
-                  mRecipe.postValue(recipe);
-                } else {
-                  String error = null;
-                  try {
-                    error = response.errorBody().string();
-                  } catch (IOException e) {
-                    e.printStackTrace();
-                  }
-                  Log.d(TAG, "onResponse: " + error);
-                  mRecipe.postValue(null);
-                }
-              }
-
-              @Override
-              public void onFailure(Call<RecipeResponse> call, Throwable t) {
-                Log.e(TAG, "onFailure: ", t);
-              }
-            });
+//    ServiceGenerator.getRecipeApi()
+//        .getRecipe(Constants.API_KEY, recipeId)
+//        .enqueue(
+//            new Callback<RecipeResponse>() {
+//              @Override
+//              public void onResponse(
+//                  Call<RecipeResponse> call, Response<RecipeResponse> response) {
+//                if (response.code() == 200) {
+//                  Recipe recipe = response.body().getRecipe();
+//                  mRecipe.postValue(recipe);
+//                } else {
+//                  String error = null;
+//                  try {
+//                    error = response.errorBody().string();
+//                  } catch (IOException e) {
+//                    e.printStackTrace();
+//                  }
+//                  Log.d(TAG, "onResponse: " + error);
+//                  mRecipe.postValue(null);
+//                }
+//              }
+//
+//              @Override
+//              public void onFailure(Call<RecipeResponse> call, Throwable t) {
+//                Log.e(TAG, "onFailure: ", t);
+//              }
+//            });
   }
 }

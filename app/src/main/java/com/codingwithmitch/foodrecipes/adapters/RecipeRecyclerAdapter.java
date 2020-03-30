@@ -35,9 +35,9 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
         @Override
         public boolean areItemsTheSame(@NonNull Recipe oldRecipe, @NonNull Recipe newRecipe) {
           // Recipe properties may have changed if reloaded from the DB, but ID is fixed
-          return oldRecipe.getRecipeId() != null
-              && newRecipe.getRecipeId() != null
-              && oldRecipe.getRecipeId().equals(newRecipe.getRecipeId());
+          return oldRecipe.getRecipe_id() != null
+              && newRecipe.getRecipe_id() != null
+              && oldRecipe.getRecipe_id().equals(newRecipe.getRecipe_id());
         }
 
         @Override
@@ -91,20 +91,20 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
       ((RecipeViewHolder) viewHolder).title.setText(item.getTitle());
       ((RecipeViewHolder) viewHolder).publisher.setText(item.getPublisher());
       ((RecipeViewHolder) viewHolder)
-          .socialScore.setText(String.valueOf(Math.round(item.getSocialRank())));
+          .socialScore.setText(String.valueOf(Math.round(item.getSocial_rank())));
 
       RequestOptions requestOptions =
           new RequestOptions().placeholder(R.drawable.ic_launcher_background);
       Glide.with(viewHolder.itemView.getContext())
           .setDefaultRequestOptions(requestOptions)
-          .load(item.getImageUrl())
+          .load(item.getImage_url())
           .into(((RecipeViewHolder) viewHolder).image);
     } else if (itemViewType == CATEGORY_TYPE) {
       RequestOptions requestOptions =
           new RequestOptions().placeholder(R.drawable.ic_launcher_background);
       Uri path =
           Uri.parse(
-              "android.resource://com.codingwithmitch.foodrecipes/drawable/" + item.getImageUrl());
+              "android.resource://com.codingwithmitch.foodrecipes/drawable/" + item.getImage_url());
 
       Glide.with(viewHolder.itemView.getContext())
           .setDefaultRequestOptions(requestOptions)
@@ -118,7 +118,7 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
   public int getItemViewType(int position) {
     if (getItem(position).getTitle().equals("LOADING...")) {
       return LOADING_TYPE;
-    } else if (getItem(position).getSocialRank() == -1) {
+    } else if (getItem(position).getSocial_rank() == -1) {
       return CATEGORY_TYPE;
     } else {
       return RECIPE_TYPE;
@@ -141,8 +141,8 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
     for (int i = 0; i < Constants.DEFAULT_SEARCH_CATEGORIES.length; i++) {
       Recipe recipe = new Recipe();
       recipe.setTitle(Constants.DEFAULT_SEARCH_CATEGORIES[i]);
-      recipe.setImageUrl(Constants.DEFAULT_SEARCH_CATEGORY_IMAGES[i]);
-      recipe.setSocialRank(-1);
+      recipe.setImage_url(Constants.DEFAULT_SEARCH_CATEGORY_IMAGES[i]);
+      recipe.setSocial_rank(-1);
       categories.add(recipe);
     }
     submitList(categories);
