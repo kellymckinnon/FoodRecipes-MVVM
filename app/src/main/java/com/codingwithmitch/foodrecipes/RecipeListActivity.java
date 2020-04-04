@@ -41,6 +41,7 @@ public class RecipeListActivity extends BaseActivity
   private RecipeListViewModel mRecipeListViewModel;
   private RecyclerView mRecyclerView;
   private RecipeRecyclerAdapter mRecipeRecyclerAdapter;
+  private SearchView mSearchView;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -66,9 +67,11 @@ public class RecipeListActivity extends BaseActivity
         new OnScrollListener() {
           @Override
           public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-            //        if (!mRecyclerView.canScrollVertically(1)) {
-            //          mRecipeListViewModel.searchNextPage();
-            //        }
+            super.onScrollStateChanged(recyclerView, newState);
+            if (!mRecyclerView.canScrollVertically(1)
+                && mRecipeListViewModel.getViewState().getValue() == ViewState.RECIPES) {
+              mRecipeListViewModel.searchNextPage();
+            }
           }
         });
   }
@@ -80,13 +83,15 @@ public class RecipeListActivity extends BaseActivity
   }
 
   private void initSearchView() {
-    final SearchView searchView = findViewById(R.id.search_view);
-    searchView.setOnQueryTextListener(
+    mSearchView = findViewById(R.id.search_view);
+    mSearchView.setOnQueryTextListener(
         new OnQueryTextListener() {
           @Override
           public boolean onQueryTextSubmit(String query) {
             //            mRecipeRecyclerAdapter.displayLoading();
+            mRecyclerView.smoothScrollToPosition(0);
             mRecipeListViewModel.searchRecipesApi(query, 1);
+            mSearchView.clearFocus();
             return false;
           }
 
