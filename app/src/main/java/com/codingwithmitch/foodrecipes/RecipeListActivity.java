@@ -209,4 +209,13 @@ public class RecipeListActivity extends BaseActivity
     }
     return super.onOptionsItemSelected(item);
   }
+
+  @Override
+  public void onBackPressed() {
+    if (mRecipeListViewModel.getViewState().getValue() == ViewState.CATEGORIES) {
+      super.onBackPressed();
+    } else {
+      mRecipeListViewModel.setIsViewingCategories();
+    }
+  }
 }
