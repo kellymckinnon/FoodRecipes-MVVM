@@ -215,6 +215,7 @@ public class RecipeListActivity extends BaseActivity
     if (mRecipeListViewModel.getViewState().getValue() == ViewState.CATEGORIES) {
       super.onBackPressed();
     } else {
+      mRecipeListViewModel.cancelSearchRequest();
       mRecipeListViewModel.setIsViewingCategories();
     }
   }

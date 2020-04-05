@@ -21,20 +21,22 @@ public class RecipeListViewModel extends AndroidViewModel {
   private static final String TAG = "RecipeListViewModel";
   public static final String QUERY_EXHAUSTED = "No more results";
 
-  private final RecipeRepository recipeRepository;
-  private MutableLiveData<ViewState> viewState;
-  private MediatorLiveData<Resource<List<Recipe>>> recipes = new MediatorLiveData<>();
-
   public enum ViewState {
     CATEGORIES,
     RECIPES
   }
+
+  private final RecipeRepository recipeRepository;
+  private MutableLiveData<ViewState> viewState;
+  private MediatorLiveData<Resource<List<Recipe>>> recipes = new MediatorLiveData<>();
 
   // Query extras
   private boolean isQueryExhausted;
   private boolean isPerformingQuery;
   private int pageNumber;
   private String query;
+  private boolean cancelRequest;
+  private long requestStartTime;
 
   public RecipeListViewModel(@NonNull Application application) {
     super(application);
@@ -82,6 +84,8 @@ public class RecipeListViewModel extends AndroidViewModel {
   }
 
   private void executeSearch() {
+    requestStartTime = System.currentTimeMillis();
+    cancelRequest = false;
     isPerformingQuery = true;
     viewState.setValue(ViewState.RECIPES);
     final LiveData<Resource<List<Recipe>>> repositorySource =
@@ -93,14 +97,22 @@ public class RecipeListViewModel extends AndroidViewModel {
 
           @Override
           public void onChanged(Resource<List<Recipe>> listResource) {
+            if (cancelRequest) {
+              recipes.removeSource(repositorySource);
+              return;
+            }
+
             if (listResource != null) {
               recipes.setValue(listResource);
               if (listResource.status == Status.SUCCESS) {
+                Log.d(TAG, "onChanged: REQUEST TIME: " + (System.currentTimeMillis() - requestStartTime) / 1000);
                 isPerformingQuery = false;
                 if (listResource.data != null) {
-                  if (listResource.data.size()== 0) {
+                  if (listResource.data.size() == 0) {
                     Log.d(TAG, "onChanged: query is exhausted...");
-                    recipes.setValue(new Resource<List<Recipe>>(Status.ERROR, listResource.data, QUERY_EXHAUSTED));
+                    recipes.setValue(
+                        new Resource<List<Recipe>>(
+                            Status.ERROR, listResource.data, QUERY_EXHAUSTED));
                   }
                 }
                 recipes.removeSource(repositorySource);
@@ -115,5 +127,14 @@ public class RecipeListViewModel extends AndroidViewModel {
             }
           }
         });
+  }
+
+  public void cancelSearchRequest() {
+    if (isPerformingQuery) {
+      Log.d(TAG, "cancelSearchRequest: canceling the search request");
+      cancelRequest = true;
+      isPerformingQuery = false;
+      pageNumber = 1;
+    }
   }
 }
