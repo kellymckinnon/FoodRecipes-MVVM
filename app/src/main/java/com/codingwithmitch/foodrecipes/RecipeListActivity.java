@@ -23,7 +23,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.integration.recyclerview.RecyclerViewPreloader;
 import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.util.ViewPreloadSizeProvider;
 import com.codingwithmitch.foodrecipes.adapters.RecipeRecyclerAdapter;
 import com.codingwithmitch.foodrecipes.models.Recipe;
 import com.codingwithmitch.foodrecipes.util.Constants;
@@ -57,12 +59,17 @@ public class RecipeListActivity extends BaseActivity
 
   private void initRecyclerView() {
     mRecyclerView = findViewById(R.id.recipe_list);
+
+    ViewPreloadSizeProvider<String> preloadSizeProvider = new ViewPreloadSizeProvider<>();
+    RecyclerViewPreloader<String> preloader = new RecyclerViewPreloader<>(Glide.with(this), mRecipeRecyclerAdapter, preloadSizeProvider, 30)
     mRecipeRecyclerAdapter = new RecipeRecyclerAdapter();
     mRecipeRecyclerAdapter.setOnRecipeListener(this);
     mRecipeRecyclerAdapter.setGlideRequestManager(getGlideRequestManager());
+    mRecipeRecyclerAdapter.setPreloadSizeProvider(preloadSizeProvider);
     mRecyclerView.setAdapter(mRecipeRecyclerAdapter);
     mRecyclerView.addItemDecoration(new VerticalSpacingItemDecorator(30));
     mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+    mRecyclerView.addOnScrollListener(preloader);
     mRecyclerView.addOnScrollListener(
         new OnScrollListener() {
           @Override
@@ -192,7 +199,6 @@ public class RecipeListActivity extends BaseActivity
 
   @Override
   public void onCategoryClick(String category) {
-    //    mRecipeRecyclerAdapter.displayLoading(true);
     mRecipeListViewModel.searchRecipesApi(category, 1);
   }
 

@@ -1,25 +1,32 @@
 package com.codingwithmitch.foodrecipes.adapters;
 
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.ListPreloader.PreloadModelProvider;
+import com.bumptech.glide.ListPreloader.PreloadSizeProvider;
+import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.Request;
 import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.util.ViewPreloadSizeProvider;
 import com.codingwithmitch.foodrecipes.R;
 import com.codingwithmitch.foodrecipes.models.Recipe;
 import com.codingwithmitch.foodrecipes.util.Constants;
 import de.hdodenhof.circleimageview.CircleImageView;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,7 +34,8 @@ import java.util.List;
  * the hood to only make necessary changes when the list is updated, rather than refreshing the
  * whole list.
  */
-public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.ViewHolder> {
+public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.ViewHolder> implements
+    PreloadModelProvider {
 
   private static final int RECIPE_TYPE = 1;
   private static final int LOADING_TYPE = 2;
@@ -51,6 +59,7 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
       };
   private OnRecipeListener mOnRecipeListener;
   private RequestManager requestManager;
+  private ViewPreloadSizeProvider<String> preloadSizeProvider;
 
   public RecipeRecyclerAdapter() {
     super(DIFF_CALLBACK);
@@ -64,6 +73,10 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
     requestManager = glideRequestManager;
   }
 
+  public void setPreloadSizeProvider(PreloadSizeProvider preloadSizeProvider) {
+    this.preloadSizeProvider = preloadSizeProvider;
+  }
+
   @NonNull
   @Override
   public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
@@ -73,7 +86,7 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
         view =
             LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.layout_recipe_list_item, viewGroup, false);
-        return new RecipeViewHolder(view, mOnRecipeListener, requestManager);
+        return new RecipeViewHolder(view, mOnRecipeListener, requestManager, preloadSizeProvider);
       case LOADING_TYPE:
         view =
             LayoutInflater.from(viewGroup.getContext())
@@ -157,6 +170,20 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
     return list.size() > 0 && list.get(list.size() - 1).getTitle().equals("LOADING...");
   }
 
+  @NonNull
+  @Override
+  public List getPreloadItems(int position) {
+    String url = getItem(position).getImage_url();
+    if (TextUtils.isEmpty(url)) return Collections.emptyList();
+    return Collections.singletonList(url);
+  }
+
+  @Nullable
+  @Override
+  public RequestBuilder<?> getPreloadRequestBuilder(@NonNull Object item) {
+    return requestManager.load(item);
+  }
+
   public interface OnRecipeListener {
     void onRecipeClick(int position);
 
@@ -171,11 +198,13 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
     final AppCompatImageView image;
     final OnRecipeListener onRecipeListener;
     final RequestManager requestManager;
+    final ViewPreloadSizeProvider preloadSizeProvider;
 
-    RecipeViewHolder(@NonNull View itemView, OnRecipeListener onRecipeListener, RequestManager requestManager) {
+    RecipeViewHolder(@NonNull View itemView, OnRecipeListener onRecipeListener, RequestManager requestManager, ViewPreloadSizeProvider preloadSizeProvider) {
       super(itemView);
       this.onRecipeListener = onRecipeListener;
       this.requestManager = requestManager;
+      this.preloadSizeProvider = preloadSizeProvider;
       title = itemView.findViewById(R.id.recipe_title);
       publisher = itemView.findViewById(R.id.recipe_publisher);
       socialScore = itemView.findViewById(R.id.recipe_social_score);
@@ -189,6 +218,7 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
       title.setText(recipe.getTitle());
       publisher.setText(recipe.getPublisher());
       socialScore.setText(String.valueOf(Math.round(recipe.getSocial_rank())));
+      preloadSizeProvider.setView();
     }
 
     @Override
