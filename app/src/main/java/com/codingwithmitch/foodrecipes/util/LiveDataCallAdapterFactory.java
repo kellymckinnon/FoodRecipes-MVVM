@@ -3,7 +3,6 @@ package com.codingwithmitch.foodrecipes.util;
 import androidx.lifecycle.LiveData;
 import com.codingwithmitch.foodrecipes.requests.responses.ApiResponse;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import retrofit2.CallAdapter;
@@ -16,7 +15,7 @@ public class LiveDataCallAdapterFactory extends CallAdapter.Factory {
    * requests.
    *
    * <p>CHECK 1: returnType returns LiveData CHECK 2: Type LiveData<T> is of ApiResponse.class CHECK
-   * 3: Make sure ApiResponse is parameterizaed. AKA: ApiResponse<T> exists.
+   * 3: Make sure ApiResponse is parameterized. AKA: ApiResponse<T> exists.
    */
   @Override
   public CallAdapter<?, ?> get(Type returnType, Annotation[] annotations, Retrofit retrofit) {

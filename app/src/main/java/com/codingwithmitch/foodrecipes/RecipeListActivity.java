@@ -162,10 +162,6 @@ public class RecipeListActivity extends BaseActivity
                         Toast.makeText(
                                 RecipeListActivity.this, listResource.message, Toast.LENGTH_SHORT)
                             .show();
-
-                        if (listResource.message.equals(QUERY_EXHAUSTED)) {
-                          mRecipeRecyclerAdapter.showQueryExhausted();
-                        }
                         break;
                       case SUCCESS:
                         Log.d(TAG, "onChanged: cache has been refreshed.");

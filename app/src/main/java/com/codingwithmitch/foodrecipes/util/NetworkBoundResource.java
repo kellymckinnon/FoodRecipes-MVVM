@@ -20,9 +20,9 @@ public abstract class NetworkBoundResource<CacheObject, RequestObject> {
 
   private static final String TAG = "NetworkBoundResource";
 
-  private AppExecutors mAppExecutors;
+  private final AppExecutors mAppExecutors;
 
-  private MediatorLiveData<Resource<CacheObject>> mResults = new MediatorLiveData<>();
+  private final MediatorLiveData<Resource<CacheObject>> mResults = new MediatorLiveData<>();
 
   public NetworkBoundResource(AppExecutors appExecutors) {
     mAppExecutors = appExecutors;

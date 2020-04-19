@@ -21,7 +21,7 @@ import java.util.List;
 public class RecipeRepository {
   private static final String TAG = "RecipeRepository";
   private static RecipeRepository instance;
-  private RecipeDao recipeDao;
+  private final RecipeDao recipeDao;
 
   private RecipeRepository(Context context) {
     recipeDao = RecipeDatabase.getInstance(context).getRecipeDao();

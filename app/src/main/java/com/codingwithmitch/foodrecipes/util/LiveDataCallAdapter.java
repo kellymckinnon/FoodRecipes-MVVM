@@ -9,11 +9,11 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /** Convert generic Retrofit responses to LiveData */
-public class LiveDataCallAdapter<R> implements CallAdapter<R, LiveData<ApiResponse<R>>> {
+class LiveDataCallAdapter<R> implements CallAdapter<R, LiveData<ApiResponse<R>>> {
 
-  private Type responseType;
+  private final Type responseType;
 
-  public LiveDataCallAdapter(Type responseType) {
+  LiveDataCallAdapter(Type responseType) {
     this.responseType = responseType;
   }
 
@@ -28,7 +28,7 @@ public class LiveDataCallAdapter<R> implements CallAdapter<R, LiveData<ApiRespon
       @Override
       protected void onActive() {
         super.onActive();
-        final ApiResponse apiResponse = new ApiResponse();
+        final ApiResponse<R> apiResponse = new ApiResponse<>();
         call.enqueue(new Callback<R>() {
           @Override
           public void onResponse(Call<R> call, Response<R> response) {

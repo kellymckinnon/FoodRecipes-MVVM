@@ -8,7 +8,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModel;
 import com.codingwithmitch.foodrecipes.models.Recipe;
 import com.codingwithmitch.foodrecipes.repositories.RecipeRepository;
 import com.codingwithmitch.foodrecipes.util.Resource;
@@ -28,7 +27,7 @@ public class RecipeListViewModel extends AndroidViewModel {
 
   private final RecipeRepository recipeRepository;
   private MutableLiveData<ViewState> viewState;
-  private MediatorLiveData<Resource<List<Recipe>>> recipes = new MediatorLiveData<>();
+  private final MediatorLiveData<Resource<List<Recipe>>> recipes = new MediatorLiveData<>();
 
   // Query extras
   private boolean isQueryExhausted;
@@ -111,7 +110,7 @@ public class RecipeListViewModel extends AndroidViewModel {
                   if (listResource.data.size() == 0) {
                     Log.d(TAG, "onChanged: query is exhausted...");
                     recipes.setValue(
-                        new Resource<List<Recipe>>(
+                        new Resource<>(
                             Status.ERROR, listResource.data, QUERY_EXHAUSTED));
                   }
                 }

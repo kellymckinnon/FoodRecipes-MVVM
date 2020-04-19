@@ -5,7 +5,6 @@ import static com.codingwithmitch.foodrecipes.util.Constants.CONNECTION_TIMEOUT;
 import static com.codingwithmitch.foodrecipes.util.Constants.READ_TIMEOUT;
 import static com.codingwithmitch.foodrecipes.util.Constants.WRITE_TIMEOUT;
 
-import androidx.lifecycle.LiveData;
 import com.codingwithmitch.foodrecipes.util.LiveDataCallAdapterFactory;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
@@ -15,7 +14,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 /** Holds Retrofit instance and API instance */
 public class ServiceGenerator {
 
-  private static OkHttpClient client = new OkHttpClient.Builder()
+  private static final OkHttpClient client = new OkHttpClient.Builder()
       // time it takes for app to establish connection to server
       .connectTimeout(CONNECTION_TIMEOUT, TimeUnit.SECONDS)
       // time between each byte read from the server

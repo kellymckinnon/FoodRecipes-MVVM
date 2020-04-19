@@ -30,7 +30,7 @@ public class AppExecutors {
   // Posts things to the main thread
   private static class MainThreadExecutor implements Executor {
 
-    private Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
+    private final Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
 
     @Override
     public void execute(Runnable command) {

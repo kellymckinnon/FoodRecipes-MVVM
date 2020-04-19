@@ -125,16 +125,8 @@ public class Recipe implements Parcelable {
     return publisher;
   }
 
-  public void setPublisher(String publisher) {
-    this.publisher = publisher;
-  }
-
   public String[] getIngredients() {
     return ingredients;
-  }
-
-  public void setIngredients(String[] ingredients) {
-    this.ingredients = ingredients;
   }
 
   public String getImage_url() {
@@ -155,10 +147,6 @@ public class Recipe implements Parcelable {
 
   public String getRecipe_id() {
     return recipe_id;
-  }
-
-  public void setRecipe_id(String recipe_id) {
-    this.recipe_id = recipe_id;
   }
 
   @Override

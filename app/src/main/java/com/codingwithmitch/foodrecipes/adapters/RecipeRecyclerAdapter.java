@@ -134,7 +134,7 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
   public void hideLoading() {
     if (isLoading()) {
       // The loading will either be at the beginning or end
-      List<Recipe> currentList = new ArrayList(getCurrentList());
+      List<Recipe> currentList = new ArrayList<>(getCurrentList());
       if (currentList.get(0).getTitle().equals("LOADING...")) {
         currentList.remove(0);
       } else if (currentList.get(currentList.size() - 1).getTitle().equals("LOADING...")) {

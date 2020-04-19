@@ -7,7 +7,7 @@ import retrofit2.Response;
 public class ApiResponse<T> {
 
   public class ApiSuccessResponse<T> extends ApiResponse<T> {
-    private T mBody;
+    private final T mBody;
 
     ApiSuccessResponse(T body) {
       mBody = body;
@@ -19,7 +19,7 @@ public class ApiResponse<T> {
   }
 
   public class ApiErrorResponse<T> extends ApiResponse<T> {
-    private String mErrorMessage;
+    private final String mErrorMessage;
 
     ApiErrorResponse(String errorMessage) {
       mErrorMessage = errorMessage;
