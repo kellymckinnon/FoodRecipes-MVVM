@@ -59,10 +59,10 @@ public class RecipeListActivity extends BaseActivity
 
   private void initRecyclerView() {
     mRecyclerView = findViewById(R.id.recipe_list);
+    mRecipeRecyclerAdapter = new RecipeRecyclerAdapter();
 
     ViewPreloadSizeProvider<String> preloadSizeProvider = new ViewPreloadSizeProvider<>();
-    RecyclerViewPreloader<String> preloader = new RecyclerViewPreloader<>(Glide.with(this), mRecipeRecyclerAdapter, preloadSizeProvider, 30)
-    mRecipeRecyclerAdapter = new RecipeRecyclerAdapter();
+    RecyclerViewPreloader<String> preloader = new RecyclerViewPreloader<>(Glide.with(this), mRecipeRecyclerAdapter, preloadSizeProvider, 30);
     mRecipeRecyclerAdapter.setOnRecipeListener(this);
     mRecipeRecyclerAdapter.setGlideRequestManager(getGlideRequestManager());
     mRecipeRecyclerAdapter.setPreloadSizeProvider(preloadSizeProvider);

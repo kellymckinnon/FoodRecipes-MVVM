@@ -1,6 +1,5 @@
 package com.codingwithmitch.foodrecipes.adapters;
 
-import android.net.Uri;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,13 +12,9 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.ListPreloader.PreloadModelProvider;
-import com.bumptech.glide.ListPreloader.PreloadSizeProvider;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.RequestManager;
-import com.bumptech.glide.request.Request;
-import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.util.ViewPreloadSizeProvider;
 import com.codingwithmitch.foodrecipes.R;
 import com.codingwithmitch.foodrecipes.models.Recipe;
@@ -73,7 +68,7 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
     requestManager = glideRequestManager;
   }
 
-  public void setPreloadSizeProvider(PreloadSizeProvider preloadSizeProvider) {
+  public void setPreloadSizeProvider(ViewPreloadSizeProvider<String> preloadSizeProvider) {
     this.preloadSizeProvider = preloadSizeProvider;
   }
 
@@ -126,7 +121,7 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
   }
 
   public void displayLoading(boolean onlyShowLoading) {
-    List<Recipe> loadingList = onlyShowLoading ? new ArrayList<Recipe>() : getCurrentList();
+    List<Recipe> loadingList = onlyShowLoading ? new ArrayList<Recipe>() : new ArrayList<>(getCurrentList());
 
     if (!isLoading()) {
       Recipe recipe = new Recipe();
@@ -212,13 +207,13 @@ public class RecipeRecyclerAdapter extends ListAdapter<Recipe, RecyclerView.View
       itemView.setOnClickListener(this);
     }
 
-    public void onBind(Recipe recipe) {
+    void onBind(Recipe recipe) {
       requestManager.load(recipe.getImage_url()).into(image);
 
       title.setText(recipe.getTitle());
       publisher.setText(recipe.getPublisher());
       socialScore.setText(String.valueOf(Math.round(recipe.getSocial_rank())));
-      preloadSizeProvider.setView();
+      preloadSizeProvider.setView(image);
     }
 
     @Override

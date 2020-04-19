@@ -11,6 +11,7 @@ import com.codingwithmitch.foodrecipes.persistence.RecipeDao;
 import com.codingwithmitch.foodrecipes.persistence.RecipeDatabase;
 import com.codingwithmitch.foodrecipes.requests.ServiceGenerator;
 import com.codingwithmitch.foodrecipes.requests.responses.ApiResponse;
+import com.codingwithmitch.foodrecipes.requests.responses.RecipeResponse;
 import com.codingwithmitch.foodrecipes.requests.responses.RecipeSearchResponse;
 import com.codingwithmitch.foodrecipes.util.Constants;
 import com.codingwithmitch.foodrecipes.util.NetworkBoundResource;
@@ -51,7 +52,12 @@ public class RecipeRepository {
               // if the recipe already exists, I don't want to set the ingredients or timestamp
               // because they will be erased
               Recipe recipe = recipes[index];
-              recipeDao.updateRecipe(recipe.getRecipe_id(), recipe.getTitle(), recipe.getPublisher(), recipe.getImage_url(), recipe.getSocial_rank());
+              recipeDao.updateRecipe(
+                  recipe.getRecipe_id(),
+                  recipe.getTitle(),
+                  recipe.getPublisher(),
+                  recipe.getImage_url(),
+                  recipe.getSocial_rank());
             }
           }
         }
@@ -73,6 +79,51 @@ public class RecipeRepository {
       protected LiveData<ApiResponse<RecipeSearchResponse>> createCall() {
         return ServiceGenerator.getRecipeApi()
             .searchRecipe(Constants.API_KEY, query, String.valueOf(pageNumber));
+      }
+    }.getAsLiveData();
+  }
+
+  public LiveData<Resource<Recipe>> searchRecipesApi(final String recipeId) {
+    return new NetworkBoundResource<Recipe, RecipeResponse>(AppExecutors.getInstance()) {
+
+      @Override
+      protected void saveCallResult(@NonNull RecipeResponse item) {
+        if (item.getRecipe() != null) {
+          item.getRecipe().setTimestamp((int) (System.currentTimeMillis() / 1000));
+          recipeDao.insertRecipe(item.getRecipe());
+        }
+      }
+
+      @Override
+      protected boolean shouldFetch(@Nullable Recipe data) {
+        Log.d(TAG, "shouldFetch: recipe: " + data.toString());
+        int currentTime = (int) (System.currentTimeMillis() / 1000);
+        Log.d(TAG, "shouldFetch: current time: " + currentTime);
+        int lastRefresh = data.getTimestamp();
+        Log.d(TAG, "shouldFetch: last refresh: " + lastRefresh);
+        Log.d(
+            TAG,
+            "shouldFetch: it's been "
+                + ((currentTime - lastRefresh) / 60 / 60 / 24)
+                + "days since this recipe was refreshed. 30 days must elapse before refreshing.");
+        if ((currentTime - data.getTimestamp() >= Constants.RECIPE_REFRESH_TIME)) {
+          Log.d(TAG, "shouldFetch: SHOULD REFRESH IS TRUE");
+          return true;
+        }
+        Log.d(TAG, "shouldFetch: SHOULD REFRESH IS FALSE");
+        return false;
+      }
+
+      @NonNull
+      @Override
+      protected LiveData<Recipe> loadFromDb() {
+        return recipeDao.getRecipe(recipeId);
+      }
+
+      @NonNull
+      @Override
+      protected LiveData<ApiResponse<RecipeResponse>> createCall() {
+        return ServiceGenerator.getRecipeApi().getRecipe(Constants.API_KEY, recipeId);
       }
     }.getAsLiveData();
   }

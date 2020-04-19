@@ -31,7 +31,7 @@ public abstract class NetworkBoundResource<CacheObject, RequestObject> {
 
   private void init() {
     // Update LiveData for loading status
-    mResults.setValue((Resource<CacheObject>) Resource.<CacheObject>loading(null /* data */));
+    mResults.setValue(Resource.<CacheObject>loading(null /* data */));
 
     // Observe LiveData source from local db
     final LiveData<CacheObject> dbSource = loadFromDb();
